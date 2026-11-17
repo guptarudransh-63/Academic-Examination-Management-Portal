@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}My Bookings & Schedule - EMP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">My Bookings & Schedule</h2>
+        <p class="text-muted mb-0">View your active examination appointments and booking history.</p>
+    </div>
+    <div>
+        <a href="{{ url_for('student.browse_exams') }}" class="btn btn-primary">+ Browse Available Exams</a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold">All Reservations ({{ bookings|length }})</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Booking #</th>
+                    <th>Examination</th>
+                    <th>Slot Time</th>
+                    <th>Examiner</th>
+                    <th>Meeting / Location</th>
+                    <th>Status</th>
+                    <th>Booked On</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if bookings %}
+                    {% for b in bookings %}
+                        <tr>
+                            <td><span class="text-muted small">#{{ b['booking_id'] }}</span></td>
+                            <td>
+                                <strong class="d-block">{{ b['exam_title'] }}</strong>
+                                <span class="badge bg-secondary">{{ b['course_code'] }}</span>
+                            </td>
+                            <td class="small">
+                                <strong class="d-block text-dark">{{ b['start_time'] }}</strong>
+                                <span class="text-muted">to {{ b['end_time'] }}</span>
+                            </td>
+                            <td>
+                                <span class="fw-semibold d-block">{{ b['examiner_name'] }}</span>
+                                <small class="text-muted">{{ b['examiner_email'] }}</small>
+                            </td>
+                            <td class="small text-truncate" style="max-width: 200px;">
+                                {{ b['location_or_link'] or 'Online / TBA' }}
+                            </td>
+                            <td>
+                                {% if b['status'] == 'booked' %}
+                                    <span class="badge bg-success">Confirmed</span>
+                                {% elif b['status'] == 'completed' %}
+                                    <span class="badge bg-primary">Completed</span>
+                                {% elif b['status'] == 'cancelled' %}
+                                    <span class="badge bg-danger">Cancelled</span>
+                                    {% if b['cancelled_at'] %}
+                                        <small class="d-block text-muted" style="font-size: 0.75rem;">on {{ b['cancelled_at'] }}</small>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ b['status'] }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="small text-muted">{{ b['booked_at'] }}</td>
+                            <td class="text-end">
+                                {% if b['status'] == 'booked' %}
+                                    {% if now_iso <= b['cancellation_deadline'] %}
+                                        <form method="POST" action="{{ url_for('student.cancel_booking', booking_id=b['booking_id']) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel this booking? This action will release your reserved slot.');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Cancel Booking</button>
+                                        </form>
+                                    {% else %}
+                                        <button class="btn btn-sm btn-outline-secondary" disabled title="Cancellation deadline passed on {{ b.cancellation_deadline }}">
+                                            Deadline Passed
+                                        </button>
+                                    {% endif %}
+                                {% elif b['status'] == 'completed' %}
+                                    <a href="{{ url_for('student.my_results') }}" class="btn btn-sm btn-outline-primary">View Result</a>
+                                {% else %}
+                                    <span class="text-muted small">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">You have no active or historical bookings. Browse available exams to book a slot.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

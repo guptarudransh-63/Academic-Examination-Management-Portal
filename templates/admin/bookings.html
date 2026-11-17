@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}All Bookings & Overrides - EMP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Bookings & Administrative Overrides</h2>
+        <p class="text-muted mb-0">Search all student reservations, inspect historical logs, and manage emergency overrides.</p>
+    </div>
+</div>
+
+<div class="card p-3 mb-4 shadow-sm">
+    <form method="GET" action="{{ url_for('admin.bookings_list') }}" class="row g-2 align-items-center">
+        <div class="col-md-4">
+            <input type="text" class="form-control form-control-sm" name="q" value="{{ search_query }}" placeholder="Search by student, examiner, exam, or booking ID...">
+        </div>
+        <div class="col-md-3">
+            <select class="form-select form-select-sm" name="exam_id">
+                <option value="">All Examinations</option>
+                {% for e in exams %}
+                    <option value="{{ e['id'] }}" {% if exam_filter == (e['id']|string) %}selected{% endif %}>{{ e['title'] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select form-select-sm" name="status">
+                <option value="">All Statuses</option>
+                <option value="booked" {% if status_filter == 'booked' %}selected{% endif %}>Active (Booked)</option>
+                <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary btn-sm w-100">Filter</button>
+            <a href="{{ url_for('admin.bookings_list') }}" class="btn btn-outline-secondary btn-sm">Reset</a>
+        </div>
+    </form>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold">Records ({{ bookings|length }})</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Booking #</th>
+                    <th>Student</th>
+                    <th>Examination</th>
+                    <th>Slot Time</th>
+                    <th>Examiner</th>
+                    <th>Status</th>
+                    <th>Booked At</th>
+                    <th class="text-end">Emergency Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if bookings %}
+                    {% for b in bookings %}
+                        <tr>
+                            <td><span class="text-muted small">#{{ b['id'] }}</span></td>
+                            <td>
+                                <strong class="d-block">{{ b['student_name'] }}</strong>
+                                <small class="text-muted"><code>{{ b['student_username'] }}</code> ({{ b['student_email'] }})</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary mb-1">{{ b['course_code'] }}</span>
+                                <span class="d-block small fw-semibold">{{ b['exam_title'] }}</span>
+                            </td>
+                            <td class="small">
+                                <span class="d-block">{{ b['start_time'] }}</span>
+                                <span class="text-muted">to {{ b['end_time'] }}</span>
+                            </td>
+                            <td>
+                                <span class="fw-semibold d-block">{{ b['examiner_name'] }}</span>
+                                <a href="{{ url_for('admin.reassign_slot_examiner', slot_id=b['slot_id']) }}" class="small text-decoration-none">
+                                    Change Examiner &rarr;
+                                </a>
+                            </td>
+                            <td>
+                                {% if b['status'] == 'booked' %}
+                                    <span class="badge bg-success">Booked</span>
+                                {% elif b['status'] == 'cancelled' %}
+                                    <span class="badge bg-danger">Cancelled</span>
+                                    {% if b['cancelled_at'] %}
+                                        <small class="d-block text-muted" style="font-size: 0.75rem;">{{ b['cancelled_at'] }}</small>
+                                    {% endif %}
+                                {% elif b['status'] == 'completed' %}
+                                    <span class="badge bg-primary">Completed</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ b['status'] }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="small text-muted">{{ b['booked_at'] }}</td>
+                            <td class="text-end">
+                                {% if b['status'] == 'booked' %}
+                                    <a href="{{ url_for('admin.reschedule_booking', booking_id=b['id']) }}" class="btn btn-sm btn-outline-warning">
+                                        Reschedule
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted small">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">No bookings matched the search criteria.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

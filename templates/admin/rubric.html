@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Rubric Management - EMP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Examination Rubric</h2>
+        <p class="text-muted mb-0">Examination: <strong>{{ exam['title'] }}</strong> ({{ exam['course_code'] }} - {{ exam['course_name'] }})</p>
+    </div>
+    <div>
+        <a href="{{ url_for('admin.examinations') }}" class="btn btn-outline-secondary">&larr; Back to Examinations</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-5">
+        <div class="card p-4 mb-4">
+            <h5 class="fw-bold mb-3">Rubric Total Marks</h5>
+            <form method="POST" action="{{ url_for('admin.manage_rubric', exam_id=exam['id']) }}">
+                <input type="hidden" name="action" value="update_total">
+                <div class="mb-3">
+                    <label for="total_max_marks" class="form-label">Total Maximum Marks</label>
+                    <input type="number" step="0.5" class="form-control" id="total_max_marks" name="total_max_marks" value="{{ rubric['total_max_marks'] }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">General Evaluation Instructions</label>
+                    <textarea class="form-control" id="description" name="description" rows="2">{{ rubric['description'] or '' }}</textarea>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Update Rubric Overview</button>
+            </form>
+        </div>
+
+        <div class="card p-4">
+            <h5 class="fw-bold mb-3">+ Add Evaluation Criterion</h5>
+            <form method="POST" action="{{ url_for('admin.manage_rubric', exam_id=exam['id']) }}">
+                <input type="hidden" name="action" value="add_criterion">
+                <div class="mb-3">
+                    <label for="criterion_name" class="form-label">Criterion Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="criterion_name" name="criterion_name" placeholder="e.g. Conceptual Understanding" required>
+                </div>
+                <div class="mb-3">
+                    <label for="max_marks" class="form-label">Maximum Marks for Criterion <span class="text-danger">*</span></label>
+                    <input type="number" step="0.5" class="form-control" id="max_marks" name="max_marks" placeholder="e.g. 25.0" required>
+                </div>
+                <div class="mb-3">
+                    <label for="crit_desc" class="form-label">Grading Guidelines / Expectations</label>
+                    <textarea class="form-control" id="crit_desc" name="description" rows="2" placeholder="Describe expectations..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-success w-100">Add Criterion</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">Rubric Criteria ({{ criteria|length }})</h5>
+                <span class="badge {% if sum_criteria_marks == rubric['total_max_marks'] %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                    Sum: {{ sum_criteria_marks }} / {{ rubric['total_max_marks'] }} Marks
+                </span>
+            </div>
+            {% if sum_criteria_marks != rubric['total_max_marks'] and criteria %}
+                <div class="alert alert-warning m-3 mb-0 py-2 small">
+                    <strong>Note:</strong> The sum of criteria marks ({{ sum_criteria_marks }}) does not match the rubric total ({{ rubric['total_max_marks'] }}). You can adjust criteria or update the total.
+                </div>
+            {% endif %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Criterion</th>
+                            <th>Max Marks</th>
+                            <th>Guidelines</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if criteria %}
+                            {% for c in criteria %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td class="fw-semibold">{{ c['criterion_name'] }}</td>
+                                    <td><span class="badge bg-primary fs-6">{{ c['max_marks'] }}</span></td>
+                                    <td class="text-muted small">{{ c['description'] or '—' }}</td>
+                                    <td class="text-end">
+                                        <form method="POST" action="{{ url_for('admin.delete_criterion', criterion_id=c['id']) }}" class="d-inline" onsubmit="return confirm('Remove criterion {{ c.criterion_name }}?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">No criteria defined yet. Add criteria on the left.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

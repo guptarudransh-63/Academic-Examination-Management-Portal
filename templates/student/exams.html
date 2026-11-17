@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Examinations - EMP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Available Examinations</h2>
+        <p class="text-muted mb-0">Browse and filter examinations, check booking windows, and reserve available slots.</p>
+    </div>
+</div>
+
+<div class="card p-3 mb-4 shadow-sm">
+    <form method="GET" action="{{ url_for('student.browse_exams') }}" class="row g-2 align-items-center">
+        <div class="col-md-6">
+            <input type="text" class="form-control form-control-sm" name="q" value="{{ search_query }}" placeholder="Search by exam title, course code, or name...">
+        </div>
+        <div class="col-md-4">
+            <select class="form-select form-select-sm" name="course">
+                <option value="">All Courses</option>
+                {% for c in course_options %}
+                    <option value="{{ c['course_code'] }}" {% if course_filter == c['course_code'] %}selected{% endif %}>
+                        {{ c['course_code'] }} - {{ c['course_name'] }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary btn-sm w-100">Search</button>
+            <a href="{{ url_for('student.browse_exams') }}" class="btn btn-outline-secondary btn-sm">Reset</a>
+        </div>
+    </form>
+</div>
+
+<div class="row g-4">
+    {% if exams %}
+        {% for e in exams %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <span class="badge bg-secondary">{{ e['course_code'] }}</span>
+                        {% if e['my_active_booking_id'] %}
+                            <span class="badge bg-success">Already Booked</span>
+                        {% elif now_iso < e['booking_start'] %}
+                            <span class="badge bg-secondary">Opens Later</span>
+                        {% elif now_iso > e['booking_end'] %}
+                            <span class="badge bg-danger">Booking Closed</span>
+                        {% else %}
+                            <span class="badge bg-primary">Booking Open</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold text-dark">{{ e['title'] }}</h5>
+                        <p class="card-text text-muted small mb-3">{{ e['course_name'] }}</p>
+                        <p class="card-text text-muted small">{{ e['description'] or 'No additional instructions.' }}</p>
+
+                        <div class="p-2 border rounded bg-light small mb-3">
+                            <span class="d-block text-muted"><strong>Booking Window:</strong></span>
+                            <span>{{ e['booking_start'] }} to {{ e['booking_end'] }}</span>
+                            <span class="d-block text-danger mt-1"><strong>Cancel Deadline:</strong> {{ e['cancellation_deadline'] }}</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="small text-muted">{{ e['open_slots_count'] }} open slots</span>
+                            {% if e['my_active_booking_id'] %}
+                                <a href="{{ url_for('student.my_bookings') }}" class="btn btn-sm btn-outline-success">View My Booking</a>
+                            {% else %}
+                                <a href="{{ url_for('student.exam_slots', exam_id=e['id']) }}" class="btn btn-sm btn-primary">
+                                    View Slots & Book &rarr;
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="card p-5 text-center text-muted">
+                <h5>No examinations found</h5>
+                <p class="mb-0">Try adjusting your search criteria or check back later.</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

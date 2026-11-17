@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Examiner Dashboard - EMP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Examiner Dashboard</h2>
+        <p class="text-muted mb-0">Welcome, {{ session.get('full_name') }}. Manage your examination slots and student evaluations.</p>
+    </div>
+    <div>
+        <a href="{{ url_for('examiner.slots') }}" class="btn btn-primary me-2">Create New Slot</a>
+        <a href="{{ url_for('examiner.assigned_exams') }}" class="btn btn-outline-secondary">My Examinations</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stats-card h-100 p-3">
+            <span class="text-muted small">Assigned Examinations</span>
+            <h3 class="fw-bold my-1 text-primary">{{ assigned_count }}</h3>
+            <a href="{{ url_for('examiner.assigned_exams') }}" class="small text-decoration-none">View Details &rarr;</a>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card h-100 p-3">
+            <span class="text-muted small">Created Slots</span>
+            <h3 class="fw-bold my-1">{{ slots_count }}</h3>
+            <a href="{{ url_for('examiner.slots') }}" class="small text-decoration-none">Manage Slots &rarr;</a>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card stats-card-success h-100 p-3">
+            <span class="text-muted small">Booked Students</span>
+            <h3 class="fw-bold my-1 text-success">{{ booked_students_count }}</h3>
+            <a href="{{ url_for('examiner.slots') }}" class="small text-decoration-none">View Roster &rarr;</a>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card {% if pending_evaluations_count > 0 %}stats-card-warning{% endif %} h-100 p-3">
+            <span class="text-muted small">Pending Evaluations</span>
+            <h3 class="fw-bold my-1 {% if pending_evaluations_count > 0 %}text-warning{% endif %}">{{ pending_evaluations_count }}</h3>
+            <a href="{{ url_for('examiner.slots') }}" class="small text-decoration-none">Grade Students &rarr;</a>
+        </div>
+    </div>
+</div>
+
+<div class="card p-4">
+    <h5 class="fw-bold mb-3">Next Steps</h5>
+    <ul class="mb-0">
+        <li class="mb-2">Check the <strong>Slot Creation Window</strong> for each assigned examination under <em>My Examinations</em>.</li>
+        <li class="mb-2">Define your available date and time slots before the slot creation window closes.</li>
+        <li class="mb-2">Once students book, access your roster and evaluate them against the rubric.</li>
+    </ul>
+</div>
+{% endblock %}

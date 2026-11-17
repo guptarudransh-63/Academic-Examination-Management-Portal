@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}My Assigned Examinations - EMP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">My Assigned Examinations</h2>
+        <p class="text-muted mb-0">Examinations you are authorized to conduct and schedule slots for.</p>
+    </div>
+    <div>
+        <a href="{{ url_for('examiner.slots') }}" class="btn btn-primary">+ Create Slot</a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold">Assigned Examinations ({{ exams|length }})</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Examination</th>
+                    <th>Course</th>
+                    <th>Slot Creation Window</th>
+                    <th>Student Booking Window</th>
+                    <th>Max Marks</th>
+                    <th>My Slots / Students</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if exams %}
+                    {% for e in exams %}
+                        <tr>
+                            <td>
+                                <strong class="d-block text-dark">{{ e['title'] }}</strong>
+                                <small class="text-muted">{{ e['description'] or '—' }}</small>
+                            </td>
+                            <td><span class="badge bg-secondary">{{ e['course_code'] }}</span></td>
+                            <td class="small">
+                                <span class="d-block">Start: {{ e['slot_creation_start'] }}</span>
+                                <span class="d-block">End: {{ e['slot_creation_end'] }}</span>
+                                {% if e['slot_creation_start'] <= now_str <= e['slot_creation_end'] %}
+                                    <span class="badge bg-success mt-1">Slot Creation Active</span>
+                                {% elif now_str < e['slot_creation_start'] %}
+                                    <span class="badge bg-secondary mt-1">Upcoming</span>
+                                {% else %}
+                                    <span class="badge bg-danger mt-1">Window Closed</span>
+                                {% endif %}
+                            </td>
+                            <td class="small">
+                                <span class="d-block">{{ e['booking_start'] }} to {{ e['booking_end'] }}</span>
+                                <small class="text-danger d-block">Cancel by: {{ e['cancellation_deadline'] }}</small>
+                            </td>
+                            <td><span class="badge bg-primary fs-6">{{ e['total_max_marks'] or 100 }}</span></td>
+                            <td>
+                                <span class="badge bg-light text-dark border">{{ e['my_slots_count'] }} slots</span><br>
+                                <span class="badge bg-info text-dark">{{ e['my_booked_count'] }} booked</span>
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ url_for('examiner.slots') }}" class="btn btn-sm btn-outline-primary">Manage Slots</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">You are not currently assigned to any examinations. Please contact the administrator.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

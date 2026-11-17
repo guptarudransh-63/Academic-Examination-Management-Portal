@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - EMP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Administrator Dashboard</h2>
+        <p class="text-muted mb-0">Overview of institutional examination metrics and portal operations.</p>
+    </div>
+    <div>
+        <a href="{{ url_for('admin.examinations') }}" class="btn btn-primary me-2">Create Examination</a>
+        <a href="{{ url_for('admin.courses') }}" class="btn btn-outline-secondary">Manage Courses</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4 col-xl-2">
+        <div class="card stats-card h-100 p-3">
+            <span class="text-muted small">Total Courses</span>
+            <h3 class="fw-bold my-1">{{ total_courses }}</h3>
+            <a href="{{ url_for('admin.courses') }}" class="small text-decoration-none">View Courses &rarr;</a>
+        </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+        <div class="card stats-card h-100 p-3">
+            <span class="text-muted small">Examinations</span>
+            <h3 class="fw-bold my-1">{{ total_exams }}</h3>
+            <a href="{{ url_for('admin.examinations') }}" class="small text-decoration-none">Manage Exams &rarr;</a>
+        </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+        <div class="card stats-card stats-card-success h-100 p-3">
+            <span class="text-muted small">Approved Examiners</span>
+            <h3 class="fw-bold my-1 text-success">{{ total_examiners }}</h3>
+            <a href="{{ url_for('admin.users_list') }}" class="small text-decoration-none">View Examiners &rarr;</a>
+        </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+        <div class="card stats-card {% if pending_examiners > 0 %}stats-card-warning{% endif %} h-100 p-3">
+            <span class="text-muted small">Pending Approvals</span>
+            <h3 class="fw-bold my-1 {% if pending_examiners > 0 %}text-warning{% endif %}">{{ pending_examiners }}</h3>
+            <a href="{{ url_for('admin.users_list') }}" class="small text-decoration-none">Review Requests &rarr;</a>
+        </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+        <div class="card stats-card h-100 p-3">
+            <span class="text-muted small">Students</span>
+            <h3 class="fw-bold my-1">{{ total_students }}</h3>
+            <a href="{{ url_for('admin.users_list') }}" class="small text-decoration-none">View Students &rarr;</a>
+        </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+        <div class="card stats-card stats-card-success h-100 p-3">
+            <span class="text-muted small">Booked Seats</span>
+            <h3 class="fw-bold my-1 text-primary">{{ total_bookings }}</h3>
+            <a href="{{ url_for('admin.bookings_list') }}" class="small text-decoration-none">View Bookings &rarr;</a>
+        </div>
+    </div>
+</div>
+
+<div class="card p-4">
+    <h5 class="fw-bold mb-3">Administrative Operations</h5>
+    <div class="row g-3">
+        <div class="col-md-3">
+            <a href="{{ url_for('admin.courses') }}" class="btn btn-outline-dark w-100 py-3">
+                <strong>Manage Courses</strong><br>
+                <small class="text-muted">Create & edit course catalog</small>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('admin.examinations') }}" class="btn btn-outline-dark w-100 py-3">
+                <strong>Manage Exams & Rubrics</strong><br>
+                <small class="text-muted">Configure windows & criteria</small>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('admin.users_list') }}" class="btn btn-outline-dark w-100 py-3">
+                <strong>Examiner Approvals</strong><br>
+                <small class="text-muted">Approve pending examiners</small>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('admin.bookings_list') }}" class="btn btn-outline-dark w-100 py-3">
+                <strong>All Bookings & Overrides</strong><br>
+                <small class="text-muted">Reschedule or reassign</small>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

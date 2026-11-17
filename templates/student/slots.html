@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Examination Slots - EMP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">{{ exam['title'] }}</h2>
+        <p class="text-muted mb-0">Course: <strong>{{ exam['course_code'] }} - {{ exam['course_name'] }}</strong></p>
+    </div>
+    <div>
+        <a href="{{ url_for('student.browse_exams') }}" class="btn btn-outline-secondary">&larr; Back to Examinations</a>
+    </div>
+</div>
+
+<div class="card p-3 mb-4 bg-light border">
+    <div class="row align-items-center">
+        <div class="col-md-7">
+            <span class="d-block small text-muted"><strong>Official Booking Window:</strong> {{ exam['booking_start'] }} to {{ exam['booking_end'] }}</span>
+            <span class="d-block small text-danger"><strong>Cancellation Deadline:</strong> {{ exam['cancellation_deadline'] }}</span>
+        </div>
+        <div class="col-md-5 text-md-end mt-2 mt-md-0">
+            {% if is_window_open %}
+                <span class="badge bg-success fs-6">Booking Window Open</span>
+            {% elif now_iso < exam['booking_start'] %}
+                <span class="badge bg-secondary fs-6">Opens at {{ exam['booking_start'] }}</span>
+            {% else %}
+                <span class="badge bg-danger fs-6">Booking Window Closed</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if existing_booking %}
+    <div class="alert alert-warning shadow-sm mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <strong class="d-block">You already have an active reservation for this examination!</strong>
+                <span>Slot Time: {{ existing_booking['start_time'] }} to {{ existing_booking['end_time'] }} with {{ existing_booking['examiner_name'] }}</span>
+            </div>
+            <div>
+                <a href="{{ url_for('student.my_bookings') }}" class="btn btn-sm btn-outline-dark">Manage in My Bookings</a>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold">Available Examination Slots ({{ slots|length }})</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Slot #</th>
+                    <th>Time Interval</th>
+                    <th>Examiner</th>
+                    <th>Location / Mode</th>
+                    <th>Availability</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if slots %}
+                    {% for s in slots %}
+                        <tr>
+                            <td><span class="text-muted small">#{{ s['id'] }}</span></td>
+                            <td>
+                                <strong class="d-block text-dark">{{ s['start_time'] }}</strong>
+                                <span class="text-muted small">to {{ s['end_time'] }}</span>
+                            </td>
+                            <td class="fw-semibold">{{ s['examiner_name'] }}</td>
+                            <td class="small">{{ s['location_or_link'] or 'Online / TBA' }}</td>
+                            <td>
+                                {% if s['seats_remaining'] <= 0 %}
+                                    <span class="badge bg-danger">Slot Full (0 seats)</span>
+                                {% else %}
+                                    <span class="badge bg-success">{{ s['seats_remaining'] }} / {{ s['capacity'] }} seats left</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% if existing_booking %}
+                                    <button class="btn btn-sm btn-secondary" disabled title="Already booked for this exam">Booked</button>
+                                {% elif not is_window_open %}
+                                    <button class="btn btn-sm btn-secondary" disabled title="Booking window is not currently active">Closed</button>
+                                {% elif s['seats_remaining'] <= 0 %}
+                                    <button class="btn btn-sm btn-secondary" disabled title="Slot is full">Full</button>
+                                {% else %}
+                                    <form method="POST" action="{{ url_for('student.book_slot', slot_id=s['id']) }}" class="d-inline" onsubmit="return confirm('Confirm booking this examination slot?');">
+                                        <button type="submit" class="btn btn-sm btn-primary">Book This Slot</button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">No slots have been scheduled for this examination yet. Please check back later.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

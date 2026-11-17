@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Course Catalog - EMP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Course Catalog</h2>
+        <p class="text-muted mb-0">Create, view, update, and remove institutional courses.</p>
+    </div>
+    <div>
+        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#createCourseForm">
+            + Add New Course
+        </button>
+    </div>
+</div>
+
+<div class="collapse mb-4" id="createCourseForm">
+    <div class="card p-4">
+        <h5 class="fw-bold mb-3">Add New Course</h5>
+        <form method="POST" action="{{ url_for('admin.courses') }}">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label for="course_code" class="form-label">Course Code <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="course_code" name="course_code" placeholder="e.g. CS101" required>
+                </div>
+                <div class="col-md-9">
+                    <label for="course_name" class="form-label">Course Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="course_name" name="course_name" placeholder="e.g. Modern Application Development I" required>
+                </div>
+                <div class="col-12">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="2" placeholder="Course syllabus summary..."></textarea>
+                </div>
+                <div class="col-12 text-end">
+                    <button type="button" class="btn btn-outline-secondary me-2" data-bs-toggle="collapse" data-bs-target="#createCourseForm">Cancel</button>
+                    <button type="submit" class="btn btn-success">Save Course</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold">Active Courses ({{ courses|length }})</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Code</th>
+                    <th>Course Name</th>
+                    <th>Description</th>
+                    <th>Examinations</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if courses %}
+                    {% for course in courses %}
+                        <tr>
+                            <td><strong class="text-primary">{{ course['course_code'] }}</strong></td>
+                            <td class="fw-semibold">{{ course['course_name'] }}</td>
+                            <td class="text-muted small text-truncate" style="max-width: 300px;">{{ course['description'] or '—' }}</td>
+                            <td>
+                                <span class="badge bg-secondary">{{ course['exam_count'] }} exams</span>
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ url_for('admin.edit_course', course_id=course['id']) }}" class="btn btn-sm btn-outline-primary me-1">Edit</a>
+                                <form method="POST" action="{{ url_for('admin.delete_course', course_id=course['id']) }}" class="d-inline" onsubmit="return confirm('Delete course {{ course.course_code }}? This will remove all associated exams.');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">No courses registered yet. Click '+ Add New Course' above to create one.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Examination - EMP{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-9 col-lg-8">
+        <div class="card p-4">
+            <h4 class="fw-bold mb-3">Edit Examination: {{ exam['title'] }}</h4>
+            <form method="POST" action="{{ url_for('admin.edit_examination', exam_id=exam['id']) }}">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="course_id" class="form-label">Course <span class="text-danger">*</span></label>
+                        <select class="form-select" id="course_id" name="course_id" required>
+                            {% for course in courses %}
+                                <option value="{{ course['id'] }}" {% if course['id'] == exam['course_id'] %}selected{% endif %}>
+                                    {{ course['course_code'] }} - {{ course['course_name'] }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-8">
+                        <label for="title" class="form-label">Examination Title <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title" name="title" value="{{ exam['title'] }}" required>
+                    </div>
+                    <div class="col-12">
+                        <label for="description" class="form-label">Description / Instructions</label>
+                        <textarea class="form-control" id="description" name="description" rows="2">{{ exam['description'] or '' }}</textarea>
+                    </div>
+
+                    <div class="col-12"><hr class="my-1"></div>
+                    <div class="col-12"><h6 class="fw-bold text-primary mb-0">Timeline Windows & Deadlines</h6></div>
+
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light">
+                            <strong class="d-block mb-2 text-dark">Examiner Slot-Creation Window</strong>
+                            <div class="mb-2">
+                                <label class="form-label small">Opens At</label>
+                                <input type="datetime-local" class="form-control form-control-sm" name="slot_creation_start" value="{{ exam['slot_creation_start'] }}" required>
+                            </div>
+                            <div>
+                                <label class="form-label small">Closes At</label>
+                                <input type="datetime-local" class="form-control form-control-sm" name="slot_creation_end" value="{{ exam['slot_creation_end'] }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light">
+                            <strong class="d-block mb-2 text-dark">Student Slot-Booking Window</strong>
+                            <div class="mb-2">
+                                <label class="form-label small">Opens At</label>
+                                <input type="datetime-local" class="form-control form-control-sm" name="booking_start" value="{{ exam['booking_start'] }}" required>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small">Closes At</label>
+                                <input type="datetime-local" class="form-control form-control-sm" name="booking_end" value="{{ exam['booking_end'] }}" required>
+                            </div>
+                            <div>
+                                <label class="form-label small">Cancellation Deadline</label>
+                                <input type="datetime-local" class="form-control form-control-sm" name="cancellation_deadline" value="{{ exam['cancellation_deadline'] }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('admin.examinations') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

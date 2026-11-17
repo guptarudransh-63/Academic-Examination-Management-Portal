@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - Examination Management Portal{% endblock %}
+
+{% block content %}
+<div class="row align-items-center py-5">
+    <div class="col-lg-7">
+        <h1 class="display-4 fw-bold text-dark mb-3">Academic Examination Management Portal</h1>
+        <p class="lead text-muted mb-4">
+            A comprehensive, role-governed platform designed for educational institutions to coordinate course examinations, slot scheduling, examiner availability, student bookings, rubric-based evaluations, and published marks.
+        </p>
+        <div class="d-flex gap-2">
+            {% if session.get('user_id') %}
+                {% if session.get('role') == 'admin' %}
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary btn-lg">Go to Admin Dashboard</a>
+                {% elif session.get('role') == 'examiner' %}
+                    <a href="{{ url_for('examiner.dashboard') }}" class="btn btn-primary btn-lg">Go to Examiner Dashboard</a>
+                {% else %}
+                    <a href="{{ url_for('student.dashboard') }}" class="btn btn-primary btn-lg">Go to Student Dashboard</a>
+                {% endif %}
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg px-4">Sign In</a>
+                <a href="{{ url_for('auth.register_student') }}" class="btn btn-outline-success btn-lg px-4">Student Registration</a>
+                <a href="{{ url_for('auth.register_examiner') }}" class="btn btn-outline-warning btn-lg px-4">Examiner Registration</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-5 mt-4 mt-lg-0">
+        <div class="card p-4 shadow-sm border-0 bg-white">
+            <h5 class="fw-bold mb-3">Portal Features</h5>
+            <ul class="list-unstyled mb-0">
+                <li class="mb-2"><strong>Secure Access Control:</strong> Strict role-based isolation for Administrators, Examiners, and Students.</li>
+                <li class="mb-2"><strong>Timeline-Governed Slots:</strong> Configurable windows for examiner slot creation and student booking.</li>
+                <li class="mb-2"><strong>Duplicate & Capacity Protection:</strong> Concurrency-safe atomic reservations ensuring no slot ever exceeds capacity.</li>
+                <li class="mb-2"><strong>Rubric-Based Grading:</strong> Multi-criteria evaluation metrics with transparent feedback.</li>
+                <li><strong>Result Publication Control:</strong> Student confidentiality guaranteed until official release.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Examiner Registration - Examination Management Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-7 col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning text-dark text-center py-3">
+                <h4 class="mb-0">Examiner Registration</h4>
+                <small>Requires Administrator Approval Before Activation</small>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-info py-2 mb-3">
+                    <small><strong>Note:</strong> Upon submitting your registration, your account will be placed in a pending state until an Administrator reviews and approves it.</small>
+                </div>
+
+                <form method="POST" action="{{ url_for('auth.register_examiner') }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="username" name="username" 
+                               value="{{ username or '' }}" required autofocus minlength="3">
+                        <div class="form-text">Choose a unique username (minimum 3 characters).</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="full_name" class="form-label">Full Name & Title <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="full_name" name="full_name" 
+                               value="{{ full_name or '' }}" placeholder="e.g. Dr. Ramesh Sharma" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Institutional Email <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="email" name="email" 
+                               value="{{ email or '' }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="password" name="password" required minlength="6">
+                        <div class="form-text">Minimum 6 characters.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required minlength="6">
+                    </div>
+
+                    <button type="submit" class="btn btn-warning w-100 py-2">Submit Examiner Registration</button>
+                </form>
+
+                <hr class="my-4">
+                <div class="text-center">
+                    <span>Already registered? </span>
+                    <a href="{{ url_for('auth.login') }}">Log in here</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

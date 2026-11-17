@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}My Examination Slots - EMP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">My Examination Slots</h2>
+        <p class="text-muted mb-0">Define your availability and schedule slots during the permitted creation window.</p>
+    </div>
+    <div>
+        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#createSlotForm">
+            + Schedule New Slot
+        </button>
+    </div>
+</div>
+
+<div class="collapse mb-4" id="createSlotForm">
+    <div class="card p-4">
+        <h5 class="fw-bold mb-3">Schedule Examination Slot</h5>
+        {% if assigned_exams %}
+            <form method="POST" action="{{ url_for('examiner.slots') }}">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label for="examination_id" class="form-label">Examination <span class="text-danger">*</span></label>
+                        <select class="form-select" id="examination_id" name="examination_id" required>
+                            <option value="">-- Choose Assigned Exam --</option>
+                            {% for e in assigned_exams %}
+                                <option value="{{ e['id'] }}">
+                                    [{{ e['course_code'] }}] {{ e['title'] }} (Creation window: {{ e['slot_creation_start'] }} to {{ e['slot_creation_end'] }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="start_time" class="form-label">Slot Start Time <span class="text-danger">*</span></label>
+                        <input type="datetime-local" class="form-control" id="start_time" name="start_time" required>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="end_time" class="form-label">Slot End Time <span class="text-danger">*</span></label>
+                        <input type="datetime-local" class="form-control" id="end_time" name="end_time" required>
+                    </div>
+
+                    <div class="col-md-1">
+                        <label for="capacity" class="form-label">Capacity <span class="text-danger">*</span></label>
+                        <input type="number" min="1" class="form-control" id="capacity" name="capacity" value="1" required>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label for="location_or_link" class="form-label">Meeting Room / Video Conference Link</label>
+                        <input type="text" class="form-control" id="location_or_link" name="location_or_link" placeholder="e.g. Lab 302 or https://meet.google.com/xyz-abc-def">
+                    </div>
+
+                    <div class="col-12 text-end">
+                        <button type="button" class="btn btn-outline-secondary me-2" data-bs-toggle="collapse" data-bs-target="#createSlotForm">Cancel</button>
+                        <button type="submit" class="btn btn-success">Publish Slot</button>
+                    </div>
+                </div>
+            </form>
+        {% else %}
+            <div class="alert alert-warning mb-0">
+                You do not have any assigned examinations currently. Please ask the administrator to assign you to an examination before scheduling slots.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold">My Scheduled Slots ({{ slots|length }})</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Slot #</th>
+                    <th>Examination</th>
+                    <th>Time Interval</th>
+                    <th>Capacity / Booked</th>
+                    <th>Location / Link</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if slots %}
+                    {% for s in slots %}
+                        <tr>
+                            <td><span class="text-muted small">#{{ s['id'] }}</span></td>
+                            <td>
+                                <strong class="d-block">{{ s['exam_title'] }}</strong>
+                                <span class="badge bg-secondary">{{ s['course_code'] }}</span>
+                            </td>
+                            <td class="small">
+                                <strong class="d-block text-dark">{{ s['start_time'] }}</strong>
+                                <span class="text-muted">to {{ s['end_time'] }}</span>
+                            </td>
+                            <td>
+                                {% if s['booked_count'] >= s['capacity'] %}
+                                    <span class="badge bg-danger">Full ({{ s['booked_count'] }}/{{ s['capacity'] }})</span>
+                                {% else %}
+                                    <span class="badge bg-success">{{ s['booked_count'] }} / {{ s['capacity'] }} seats</span>
+                                {% endif %}
+                            </td>
+                            <td class="small text-truncate" style="max-width: 200px;">
+                                {{ s['location_or_link'] or 'Not specified' }}
+                            </td>
+                            <td>
+                                {% if s['booked_count'] > 0 %}
+                                    <span class="badge bg-info text-dark">Bookings Active</span>
+                                {% else %}
+                                    <span class="badge bg-light text-dark border">Open (0 Booked)</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ url_for('examiner.slot_students', slot_id=s['id']) }}" class="btn btn-sm btn-primary me-1">
+                                    Roster ({{ s['booked_count'] }}) &rarr;
+                                </a>
+                                {% if s['booked_count'] == 0 %}
+                                    <form method="POST" action="{{ url_for('examiner.delete_slot', slot_id=s['id']) }}" class="d-inline" onsubmit="return confirm('Delete this slot?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </form>
+                                {% else %}
+                                    <button class="btn btn-sm btn-outline-secondary" disabled title="Cannot delete slot once booked by students">Delete</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">You have not scheduled any slots yet. Click '+ Schedule New Slot' above to create one.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Evaluate Student - EMP{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-9 col-lg-8">
+        <div class="card p-4 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold mb-0">Student Evaluation</h4>
+                <a href="{{ url_for('examiner.slot_students', slot_id=booking['slot_id']) }}" class="btn btn-sm btn-outline-secondary">&larr; Back to Roster</a>
+            </div>
+
+            <div class="card bg-light border-0 p-3 mb-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <span class="text-muted small">Student Candidate:</span>
+                        <h5 class="fw-bold text-dark mb-1">{{ booking['student_name'] }}</h5>
+                        <p class="text-muted small mb-0"><code>{{ booking['student_username'] }}</code> ({{ booking['student_email'] }})</p>
+                    </div>
+                    <div class="col-md-6 text-md-end mt-2 mt-md-0">
+                        <span class="text-muted small">Examination:</span>
+                        <h6 class="fw-bold text-dark mb-1">{{ booking['exam_title'] }} ({{ booking['course_code'] }})</h6>
+                        <span class="badge bg-primary">Maximum Rubric Marks: {{ booking['total_max_marks'] }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ url_for('examiner.evaluate_student', booking_id=booking['id']) }}">
+                {% if criteria %}
+                    <h5 class="fw-bold mb-3">Rubric Criteria Breakdown</h5>
+                    {% for c in criteria %}
+                        {% set score_entry = existing_scores.get(c['id']) %}
+                        <div class="card p-3 mb-3 border">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <strong class="text-dark">{{ c['criterion_name'] }}</strong>
+                                    {% if c['description'] %}
+                                        <small class="d-block text-muted">{{ c['description'] }}</small>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <span class="badge bg-secondary fs-6">Max: {{ c['max_marks'] }} Marks</span>
+                                </div>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-md-4">
+                                    <label class="form-label small">Awarded Marks <span class="text-danger">*</span></label>
+                                    <input type="number" step="0.5" min="0" max="{{ c['max_marks'] }}" 
+                                           class="form-control" name="crit_{{ c['id'] }}" 
+                                           value="{{ score_entry['marks_awarded'] if score_entry else '' }}" 
+                                           placeholder="0 to {{ c['max_marks'] }}" required>
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="form-label small">Criterion Specific Remarks</label>
+                                    <input type="text" class="form-control" name="rem_{{ c['id'] }}" 
+                                           value="{{ score_entry['remarks'] if score_entry else '' }}" 
+                                           placeholder="Specific feedback on this criterion...">
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="mb-3">
+                        <label for="total_marks" class="form-label">Total Marks Awarded (Max: {{ booking['total_max_marks'] }}) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.5" min="0" max="{{ booking['total_max_marks'] }}" 
+                               class="form-control" id="total_marks" name="total_marks" 
+                               value="{{ existing_eval['total_marks_awarded'] if existing_eval else '' }}" required>
+                    </div>
+                {% endif %}
+
+                <div class="mb-4 mt-3">
+                    <label for="general_remarks" class="form-label fw-bold">Overall Evaluation Remarks & Constructive Feedback</label>
+                    <textarea class="form-control" id="general_remarks" name="general_remarks" rows="3" 
+                              placeholder="Provide overall qualitative remarks, performance highlights, and improvement suggestions...">{{ existing_eval['general_remarks'] if existing_eval else '' }}</textarea>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('examiner.slot_students', slot_id=booking['slot_id']) }}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-success px-4">
+                        {% if existing_eval %}Update & Save Marks{% else %}Submit Evaluation{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

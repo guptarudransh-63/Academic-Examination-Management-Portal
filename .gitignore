@@ -1,0 +1,29 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv
+venv/
+venv.nosync
+venv.nosync/
+.env
+.venv
+
+# Testing cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# SQLite databases
+*.db
+*.sqlite3
+*.sqlite
+
+# macOS metadata
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes

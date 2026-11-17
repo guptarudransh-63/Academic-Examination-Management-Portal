@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Assign Examiners - EMP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Assign Examiners</h2>
+        <p class="text-muted mb-0">Examination: <strong>{{ exam['title'] }}</strong> ({{ exam['course_code'] }} - {{ exam['course_name'] }})</p>
+    </div>
+    <div>
+        <a href="{{ url_for('admin.examinations') }}" class="btn btn-outline-secondary">&larr; Back to Examinations</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-5">
+        <div class="card p-4 h-100">
+            <h5 class="fw-bold mb-3">Assign New Examiner</h5>
+            {% if available_examiners %}
+                <form method="POST" action="{{ url_for('admin.assign_examiners', exam_id=exam['id']) }}">
+                    <input type="hidden" name="action" value="assign">
+                    <div class="mb-3">
+                        <label for="examiner_id" class="form-label">Select Approved Examiner</label>
+                        <select class="form-select" id="examiner_id" name="examiner_id" required>
+                            <option value="">-- Choose Examiner --</option>
+                            {% for ex in available_examiners %}
+                                <option value="{{ ex['id'] }}">{{ ex['full_name'] }} ({{ ex['email'] }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Assign to This Examination</button>
+                </form>
+            {% else %}
+                <p class="text-muted mb-0">All approved examiners are already assigned to this examination, or no approved examiners exist.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">Currently Assigned ({{ assigned_examiners|length }})</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Examiner</th>
+                            <th>Email</th>
+                            <th>Active Slots</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if assigned_examiners %}
+                            {% for ex in assigned_examiners %}
+                                <tr>
+                                    <td class="fw-semibold">{{ ex['full_name'] }}</td>
+                                    <td class="text-muted small">{{ ex['email'] }}</td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">{{ ex['slot_count'] }} slots</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <form method="POST" action="{{ url_for('admin.assign_examiners', exam_id=exam['id']) }}" class="d-inline" onsubmit="return confirm('Remove {{ ex.full_name }} from this exam?');">
+                                            <input type="hidden" name="action" value="remove">
+                                            <input type="hidden" name="examiner_id" value="{{ ex['id'] }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" {% if ex['slot_count'] > 0 %}disabled title="Cannot remove while active slots exist"{% endif %}>
+                                                Remove
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">No examiners currently assigned. Assign one on the left.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

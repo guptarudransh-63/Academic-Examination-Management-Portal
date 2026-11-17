@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Examination Scorecard - EMP{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-9 col-lg-8">
+        <div class="card p-4 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h3 class="fw-bold mb-0">Official Examination Scorecard</h3>
+                    <small class="text-muted">Academic Examination Management Portal</small>
+                </div>
+                <div>
+                    <a href="{{ url_for('student.my_results') }}" class="btn btn-outline-secondary btn-sm">&larr; Back to Results</a>
+                    <button class="btn btn-outline-primary btn-sm ms-2" onclick="window.print()">Print Scorecard</button>
+                </div>
+            </div>
+
+            <div class="border rounded p-3 bg-light mb-4">
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Student Candidate:</small>
+                        <strong class="fs-6 text-dark">{{ session.get('full_name') }}</strong> (<code>{{ session.get('username') }}</code>)
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <small class="text-muted d-block">Evaluated By:</small>
+                        <strong class="fs-6 text-dark">{{ eval_row['examiner_name'] }}</strong>
+                    </div>
+                    <div class="col-md-6 mt-2">
+                        <small class="text-muted d-block">Course & Examination:</small>
+                        <span class="badge bg-secondary">{{ eval_row['course_code'] }}</span> 
+                        <strong class="text-dark">{{ eval_row['exam_title'] }}</strong>
+                    </div>
+                    <div class="col-md-6 text-md-end mt-2">
+                        <small class="text-muted d-block">Evaluation Date:</small>
+                        <span class="text-dark small">{{ eval_row['evaluated_at'] }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-primary text-white text-center p-3 mb-4 shadow-sm border-0">
+                <h6 class="text-uppercase tracking-wide mb-1" style="opacity: 0.85;">Total Score Obtained</h6>
+                <h1 class="display-5 fw-bold mb-0">{{ eval_row['total_marks_awarded'] }} <span class="fs-4 fw-normal" style="opacity: 0.8;">/ {{ eval_row['total_max_marks'] or 100 }}</span></h1>
+            </div>
+
+            <h5 class="fw-bold mb-3">Rubric Criteria Performance</h5>
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Criterion</th>
+                            <th>Max Marks</th>
+                            <th>Awarded Marks</th>
+                            <th>Examiner Comments</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if criteria %}
+                            {% for c in criteria %}
+                                <tr>
+                                    <td>
+                                        <strong class="d-block">{{ c['criterion_name'] }}</strong>
+                                        {% if c['criterion_desc'] %}
+                                            <small class="text-muted">{{ c['criterion_desc'] }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ c['max_marks'] }}</td>
+                                    <td><strong class="text-primary fs-6">{{ c['marks_awarded'] }}</strong></td>
+                                    <td class="text-muted small">{{ c['remarks'] or '—' }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">Direct overall evaluation without criterion breakdown.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if eval_row['general_remarks'] %}
+                <div class="card border p-3 bg-light">
+                    <h6 class="fw-bold mb-2">Examiner Remarks & Constructive Feedback</h6>
+                    <p class="mb-0 text-dark">{{ eval_row['general_remarks'] }}</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard - EMP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Student Dashboard</h2>
+        <p class="text-muted mb-0">Welcome, {{ session.get('full_name') }}. Find examination slots, check your schedule, and access published marks.</p>
+    </div>
+    <div>
+        <a href="{{ url_for('student.browse_exams') }}" class="btn btn-primary me-2">Browse Examinations</a>
+        <a href="{{ url_for('student.my_bookings') }}" class="btn btn-outline-secondary">My Schedule</a>
+    </div>
+</div>
+
+{% if next_booking %}
+    <div class="alert alert-info shadow-sm p-4 mb-4 border-0">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <span class="badge bg-primary mb-1">Upcoming Examination</span>
+                <h4 class="fw-bold mb-1">{{ next_booking['exam_title'] }} ({{ next_booking['course_code'] }})</h4>
+                <p class="mb-0 text-dark">
+                    <strong>Time:</strong> {{ next_booking['start_time'] }} to {{ next_booking['end_time'] }} | 
+                    <strong>Examiner:</strong> {{ next_booking['examiner_name'] }} | 
+                    <strong>Location:</strong> {{ next_booking['location_or_link'] or 'Online / TBA' }}
+                </p>
+            </div>
+            <div>
+                <a href="{{ url_for('student.my_bookings') }}" class="btn btn-light fw-semibold">View Details</a>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card stats-card stats-card-success h-100 p-4">
+            <span class="text-muted">Active Upcoming Bookings</span>
+            <h2 class="fw-bold my-2 text-success">{{ active_bookings_count }}</h2>
+            <a href="{{ url_for('student.my_bookings') }}" class="small text-decoration-none">View My Schedule &rarr;</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stats-card h-100 p-4">
+            <span class="text-muted">Currently Open for Booking</span>
+            <h2 class="fw-bold my-2 text-primary">{{ open_exams_count }}</h2>
+            <a href="{{ url_for('student.browse_exams') }}" class="small text-decoration-none">Browse Open Exams &rarr;</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stats-card stats-card-warning h-100 p-4">
+            <span class="text-muted">Published Exam Results</span>
+            <h2 class="fw-bold my-2 text-dark">{{ published_results_count }}</h2>
+            <a href="{{ url_for('student.my_results') }}" class="small text-decoration-none">View Scorecards &rarr;</a>
+        </div>
+    </div>
+</div>
+
+<div class="card p-4">
+    <h5 class="fw-bold mb-3">Booking Guidelines & Academic Policies</h5>
+    <ul class="mb-0">
+        <li class="mb-2"><strong>Booking Windows:</strong> Slots are visible and can be reserved only during the designated student booking window for each exam.</li>
+        <li class="mb-2"><strong>One Booking Per Exam:</strong> A student cannot hold duplicate active bookings for the same examination.</li>
+        <li class="mb-2"><strong>Slot Capacity:</strong> Every examination slot has a strict seat capacity limit. Slots become unavailable once full.</li>
+        <li class="mb-2"><strong>Cancellation Policy:</strong> You may cancel an active booking at any time <em>before the cancellation deadline</em>. Cancelling after the deadline is strictly disabled.</li>
+        <li><strong>Evaluation Results:</strong> Your marks and rubric evaluation feedback will appear in <em>My Results</em> once released by the administration.</li>
+    </ul>
+</div>
+{% endblock %}

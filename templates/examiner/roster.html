@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Slot Student Roster - EMP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Student Roster: Slot #{{ slot['id'] }}</h2>
+        <p class="text-muted mb-0">
+            <strong>{{ slot['exam_title'] }}</strong> ({{ slot['course_code'] }}) | 
+            Time: {{ slot['start_time'] }} to {{ slot['end_time'] }}
+        </p>
+    </div>
+    <div>
+        <a href="{{ url_for('examiner.slots') }}" class="btn btn-outline-secondary">&larr; Back to My Slots</a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold">Booked Students ({{ roster|length }})</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Student Name</th>
+                    <th>Roll / Username</th>
+                    <th>Email</th>
+                    <th>Booking Time</th>
+                    <th>Status</th>
+                    <th>Marks Awarded</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if roster %}
+                    {% for r in roster %}
+                        <tr>
+                            <td class="fw-semibold">{{ r['student_name'] }}</td>
+                            <td><code>{{ r['student_username'] }}</code></td>
+                            <td>{{ r['student_email'] }}</td>
+                            <td class="small text-muted">{{ r['booked_at'] }}</td>
+                            <td>
+                                {% if r['evaluation_id'] %}
+                                    <span class="badge bg-success">Evaluated</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">Pending Evaluation</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if r['evaluation_id'] %}
+                                    <span class="fw-bold text-primary">{{ r['total_marks_awarded'] }} Marks</span>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ url_for('examiner.evaluate_student', booking_id=r['booking_id']) }}" class="btn btn-sm {% if r['evaluation_id'] %}btn-outline-primary{% else %}btn-primary{% endif %}">
+                                    {% if r['evaluation_id'] %}Update Evaluation{% else %}Evaluate Student &rarr;{% endif %}
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">No students have booked this slot yet.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

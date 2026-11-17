@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Examinations & Rubrics - EMP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Examinations & Timelines</h2>
+        <p class="text-muted mb-0">Define examinations, configure operational windows, and assign examiners.</p>
+    </div>
+    <div>
+        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#createExamForm">
+            + Create New Examination
+        </button>
+    </div>
+</div>
+
+<div class="collapse mb-4" id="createExamForm">
+    <div class="card p-4">
+        <h5 class="fw-bold mb-3">Schedule New Examination</h5>
+        <form method="POST" action="{{ url_for('admin.examinations') }}">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="course_id" class="form-label">Course <span class="text-danger">*</span></label>
+                    <select class="form-select" id="course_id" name="course_id" required>
+                        <option value="">-- Select Course --</option>
+                        {% for course in courses %}
+                            <option value="{{ course['id'] }}">{{ course['course_code'] }} - {{ course['course_name'] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-8">
+                    <label for="title" class="form-label">Examination Title <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="title" name="title" placeholder="e.g. End-Term Project Viva Voce" required>
+                </div>
+                <div class="col-12">
+                    <label for="description" class="form-label">Description / Instructions</label>
+                    <textarea class="form-control" id="description" name="description" rows="2" placeholder="Exam format and guidelines..."></textarea>
+                </div>
+
+                <div class="col-12"><hr class="my-1"></div>
+                <div class="col-12"><h6 class="fw-bold text-primary mb-0">Timeline Windows & Deadlines</h6></div>
+
+                <div class="col-md-6">
+                    <div class="p-3 border rounded bg-light">
+                        <strong class="d-block mb-2 text-dark">Examiner Slot-Creation Window</strong>
+                        <div class="mb-2">
+                            <label class="form-label small">Opens At <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control form-control-sm" name="slot_creation_start" required>
+                        </div>
+                        <div>
+                            <label class="form-label small">Closes At <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control form-control-sm" name="slot_creation_end" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="p-3 border rounded bg-light">
+                        <strong class="d-block mb-2 text-dark">Student Slot-Booking Window</strong>
+                        <div class="mb-2">
+                            <label class="form-label small">Opens At <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control form-control-sm" name="booking_start" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small">Closes At <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control form-control-sm" name="booking_end" required>
+                        </div>
+                        <div>
+                            <label class="form-label small">Cancellation Deadline <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control form-control-sm" name="cancellation_deadline" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 text-end mt-3">
+                    <button type="button" class="btn btn-outline-secondary me-2" data-bs-toggle="collapse" data-bs-target="#createExamForm">Cancel</button>
+                    <button type="submit" class="btn btn-success">Schedule Examination</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold">Configured Examinations ({{ examinations|length }})</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Examination</th>
+                    <th>Course</th>
+                    <th>Slot Creation Window</th>
+                    <th>Booking Window & Deadline</th>
+                    <th>Examiners</th>
+                    <th>Slots / Booked</th>
+                    <th>Results Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if examinations %}
+                    {% for exam in examinations %}
+                        <tr>
+                            <td>
+                                <strong class="d-block text-dark">{{ exam['title'] }}</strong>
+                                <small class="text-muted">{{ exam['description'] or 'No description' }}</small>
+                            </td>
+                            <td><span class="badge bg-secondary">{{ exam['course_code'] }}</span></td>
+                            <td class="small">
+                                <span class="d-block">From: {{ exam['slot_creation_start'] }}</span>
+                                <span class="d-block">To: {{ exam['slot_creation_end'] }}</span>
+                            </td>
+                            <td class="small">
+                                <span class="d-block">Book: {{ exam['booking_start'] }} &rarr; {{ exam['booking_end'] }}</span>
+                                <span class="text-danger d-block">Cancel by: {{ exam['cancellation_deadline'] }}</span>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('admin.assign_examiners', exam_id=exam['id']) }}" class="btn btn-sm btn-outline-primary">
+                                    {{ exam['assigned_examiners_count'] }} Assigned &rarr;
+                                </a>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border">{{ exam['slot_count'] }} slots</span><br>
+                                <span class="badge bg-success">{{ exam['booking_count'] }} booked</span>
+                            </td>
+                            <td>
+                                {% if exam['results_published'] %}
+                                    <span class="badge bg-success mb-1 d-block">Published</span>
+                                    <form method="POST" action="{{ url_for('admin.toggle_publish_results', exam_id=exam['id']) }}">
+                                        <button type="submit" class="btn btn-xs btn-outline-secondary py-0" style="font-size: 0.75rem;">Hide</button>
+                                    </form>
+                                {% else %}
+                                    <span class="badge bg-secondary mb-1 d-block">Hidden</span>
+                                    <form method="POST" action="{{ url_for('admin.toggle_publish_results', exam_id=exam['id']) }}">
+                                        <button type="submit" class="btn btn-xs btn-outline-success py-0" style="font-size: 0.75rem;">Publish</button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('admin.manage_rubric', exam_id=exam['id']) }}" class="btn btn-outline-info" title="Manage Rubric">Rubric</a>
+                                    <a href="{{ url_for('admin.edit_examination', exam_id=exam['id']) }}" class="btn btn-outline-primary" title="Edit Exam">Edit</a>
+                                    <form method="POST" action="{{ url_for('admin.delete_examination', exam_id=exam['id']) }}" class="d-inline" onsubmit="return confirm('Delete examination {{ exam.title }}?');">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">No examinations scheduled yet.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
